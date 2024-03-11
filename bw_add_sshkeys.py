@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import subprocess
+import keyring
 from typing import Any
 
 
@@ -18,6 +19,8 @@ def get_session(session: str) -> str:
     # Check for an existing, user-supplied Bitwarden session
     if not session:
         session = os.environ.get("BW_SESSION", "")
+    if not session:
+        session = keyring.get_password('bitwarden','session')
     if session:
         logging.debug("Existing Bitwarden session found")
         return session
@@ -43,6 +46,13 @@ def get_session(session: str) -> str:
         'To re-use this BitWarden session run: export BW_SESSION="%s"',
         session,
     )
+
+    # Save session in keyring
+    keyring.set_password('bitwarden','session',session)
+    logging.info(
+        'BW session has been saved in local keyring'
+    )
+
     return session
 
 
